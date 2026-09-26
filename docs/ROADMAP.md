@@ -10,7 +10,7 @@
 
 ## Phase 0: プロジェクト初期化
 
-- [x] Vite + React + TypeScriptでプロジェクトを作成する（パッケージ名`ufodb_playground`）
+- [x] Vite + React + TypeScriptでプロジェクトを作成する（パッケージ名`ufodb-playground`）
 - [ ] 独立したgitリポジトリとしてコミットする
 - [x] Reactのメジャーバージョンを19に揃える（`ufodb-design-system`の`peerDependencies`が`^19`のため）。Vite・TypeScriptはStudioと揃える必要はない（ライブラリはビルド済みの`dist/`を読むだけなので、利用側のVite・TSのバージョンには依存しない）。現状はdesign_systemと同じVite 8 / TS 6
 
@@ -21,19 +21,21 @@
 - [x] `pnpm add github:kento-yoshidu/ufodb_design_system`で追加する（`node_modules`をサブフォルダで作ってから移動していたため`ERR_PNPM_UNEXPECTED_VIRTUAL_STORE`が出た。`node_modules`を消して入れ直して解決）。`package.json`には`"ufodb-design-system": "github:kento-yoshidu/ufodb_design_system"`と入り、参照したコミットは`pnpm-lock.yaml`に記録される（方針は`CLAUDE.md`の「`ufodb-design-system`への依存」）
 - [x] `import "ufodb-design-system/style.css"`を入れる（`main.tsx`）。`dist/index.js`はCSSを自分で読み込まないため、利用側で1回importする必要がある
 - [x] `App.tsx`をテンプレートの内容から`<Dummy label="..." />`だけに置き換える
-- [ ] 確認すること:
+- [x] 確認すること:
   - [x] ダミーコンポーネントが表示され、ボタンを押すと数字が増える（hooksが動く = Reactが1つだけ読み込まれている）。`link:`ではなくgit依存なので、`node_modules/.pnpm`のReactは`react@19.3.0`の1つだけ
   - [x] CSS Modulesのスタイルと、CSS変数（デザイントークン）が効いている
-  - [ ] エディタでpropsの型補完が効く（`label`を省くと型エラーになるか）
+  - [x] エディタでpropsの型が効く（`label`を省くと`Property 'label' is missing ... ts(2741)`になり、`Dummy.d.ts`の定義に飛べる）
   - [x] `pnpm build`（本番ビルド）が通る。出力のCSS（`dist/assets/index-*.css`）にdesign_systemのクラスと`--attention-color`が含まれている
-  - [ ] `pnpm preview`で本番ビルドも同じように表示される
+  - [x] `pnpm preview`で本番ビルドも同じように表示される
 - [ ] テンプレート由来の`index.css`・`App.css`・`src/assets/`・`public/icons.svg`などを整理する（全体の`button`や文字色のスタイルがdesign_system側の見た目と混ざるため。Phase 3で画面を組み立てる前に片付ける）
 
 ## Phase 2: GitHub Pagesへのデプロイ
 
-- [ ] リポジトリ名を`ufodb_playground`にリネームする（Pagesの URL が`https://kento-yoshidu.github.io/<リポジトリ名>/`になり、Viteの`base`もこれに合わせるため、デプロイより先に済ませる）
-- [ ] `vite.config.ts`に`base: "/ufodb_playground/"`を設定する
-- [ ] GitHub Actionsで`pnpm install` → `pnpm build` → `dist/`をPagesにデプロイするworkflowを作る（リポジトリ設定のPagesのSourceを「GitHub Actions」にする）
+- [x] リポジトリ名を`ufodb_playground`にリネームする（Pagesの URL が`https://kento-yoshidu.github.io/<リポジトリ名>/`になり、Viteの`base`もこれに合わせるため、デプロイより先に済ませる）
+- [x] ローカルの`origin`を新しいURLに変える（`git remote set-url origin git@github.com:kento-yoshidu/ufodb_playground.git`）。旧URL（`playground.git`）もGitHubのリダイレクトで当面は動くが、同じアカウントで`playground`という名前のリポジトリを新しく作るとリダイレクトが切れる
+- [x] `vite.config.ts`に`base: "/ufodb_playground/"`を設定する（ビルド後の`index.html`のJS・CSS・faviconのパスが`/ufodb_playground/...`になることを確認済み）
+- [x] GitHub Actionsで`pnpm install` → `pnpm build` → `dist/`をPagesにデプロイするworkflowを作る（`.github/workflows/actions.yaml`。`main`へのpushと手動実行で動く）
+- [ ] リポジトリ設定のPagesのSourceを「GitHub Actions」にする
 - [ ] 公開URLでPhase 1と同じ確認をする
 - [ ] デプロイ手順と`base`の設定を`CLAUDE.md`に追記し、「未決定事項」のホスティング先を消す
 

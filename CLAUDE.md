@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## プロジェクト概要
 
-`ufodb-playground`（リポジトリ: `ufodb_playground`。現在は`playground`で、リネーム予定）: `ufodb_v0`（Union-Find DB）をブラウザだけで試せるWebアプリ。UFO Studio（Tauri製デスクトップアプリ）と同じUI・同じGUI操作を、インストールなしで提供する。
+`ufodb-playground`（リポジトリ: `ufodb_playground`）: `ufodb_v0`（Union-Find DB）をブラウザだけで試せるWebアプリ。UFO Studio（Tauri製デスクトップアプリ）と同じUI・同じGUI操作を、インストールなしで提供する。
 
 - **サーバーを持たない**: `ufodb_v0`をWebAssemblyにコンパイルし、ブラウザのタブ内で動かす。サーバーの役割はHTML/JS/`.wasm`の静的ファイルを配ることだけ
 - **永続化しない**: データはタブ内のメモリにだけあり、リロードやタブを閉じると消える
