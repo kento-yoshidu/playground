@@ -1,75 +1,22 @@
-# React + TypeScript + Vite
+# ufodb-playground
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+`ufodb_v0`（Union-Find DB）をブラウザだけで試せるWebアプリ。UFO Studio（デスクトップアプリ）と同じUI・同じGUI操作を、インストールなしで使える。
 
-Currently, two official plugins are available:
+公開URL: https://kento-yoshidu.github.io/ufodb_playground/
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- サーバーを持たず、`ufodb_v0`をWebAssemblyにしてブラウザのタブ内で動かす
+- データは保存しない。リロードやタブを閉じると消える
+- UIコンポーネントは[`ufodb-design-system`](https://github.com/kento-yoshidu/ufodb_design_system)を使う
 
-## React Compiler
+現在の進捗は[`docs/ROADMAP.md`](docs/ROADMAP.md)を参照。
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## 開発
 
 ```
-
-You can also install [eslint-plugin-react-x](https://npmx.dev/package/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://npmx.dev/package/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
+pnpm install
+pnpm dev      # 開発サーバー（http://localhost:5173/ufodb_playground/）
+pnpm build    # 本番ビルド（dist/に出力）
+pnpm preview  # 本番ビルドの確認
 ```
+
+`main`にマージすると、GitHub ActionsでGitHub Pagesに自動デプロイされる。
