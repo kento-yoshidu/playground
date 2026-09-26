@@ -15,12 +15,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 構成・アーキテクチャ
 
-<!-- ディレクトリ名はリポジトリ作成後に実際の構成に合わせて更新する -->
-
-- `wasm/` — Rustのcrate。`ufodb_v0`を依存に持ち、`#[wasm_bindgen]`で`Ufdb`の操作をJSに公開する薄いラッパー。Studioの`src-tauri/src/lib.rs`（`#[tauri::command]`）にあたる
+- `wasm/` — Rustのcrate（crate名`wasm`、`crate-type = ["cdylib"]`）。`ufodb_v0`を依存に持ち、`#[wasm_bindgen]`で`Ufdb`の操作をJSに公開する薄いラッパー。Studioの`src-tauri/src/lib.rs`（`#[tauri::command]`）にあたる
+  - 現状は`ufodb_v0`につなぐ前のサンプル（`add`関数と`Counter`構造体）。`ufodb_v0`がWASMでビルドできるようになったら`Ufdb`のラッパーに置き換える（`docs/ROADMAP.md`のPhase 3）
+  - `wasm-pack build wasm --target web`で`wasm/pkg/`（`wasm_bg.wasm`・つなぎの`wasm.js`・型定義`wasm.d.ts`）が生成される。`pkg/`はコミットせず、ESLintの対象からも外している
   - `Ufdb::groups()`のように借用（`&String`）や`HashMap`を返すメソッドは、そのままJSに渡せないため、所有権のある型（`Vec<Vec<String>>`など）に変換して返す
 - `src/` — React + TypeScript（Vite）。UIコンポーネントは`ufodb-design-system`から使い、このリポジトリではWASMとの接続と画面の組み立てを行う
-  - WASMは最初に`await init()`が必要。初期化が終わるまでのローディング表示を考慮する
+  - `wasm/pkg/wasm.js`から`init`（default export）と公開した関数・クラスをimportする
+  - WASMは最初に`init()`が必要。`init()`が終わる前に関数を呼ぶと`Cannot read properties of undefined`になるので、`init().then(...)`で準備完了のstateを立ててから呼ぶ
+  - 状態を持つWASMのオブジェクト（`Counter`、将来の`Ufdb`）は、`init()`のあとに1回だけ`new`して`useRef`で持つ。WASMの中の値が変わってもReactは再描画しないため、操作のあとに値（`groups()`など）を読み直してstateに入れる
 
 Studioとの対応関係:
 
@@ -32,7 +34,7 @@ Studioとの対応関係:
 
 ## `ufodb_v0`への依存
 
-- `wasm/Cargo.toml`では、`ufodb_v0`をgit依存（`https://github.com/kento-yoshidu/toy_ufdb`）で参照する（publicなのでCIでも認証不要）。必要に応じて`tag`/`rev`でバージョンを固定する
+- （Phase 3-2で追加予定）`wasm/Cargo.toml`では、`ufodb_v0`をgit依存（`https://github.com/kento-yoshidu/toy_ufdb`）で参照する（publicなのでCIでも認証不要）。必要に応じて`tag`/`rev`でバージョンを固定する
 - ローカルで`ufodb_v0`の変更を試すときは、Cargoの`[patch]`でローカルのパスに差し替える
 - `ufodb_v0`本体（コア機能・公開API・`Cargo.toml`）の変更はこのリポジトリでは行わない。Playgroundで必要になった公開APIが無い場合や、WASMでビルドできない依存がある場合は、`toy_ufdb`側で対応してもらう
 - `ufodb_v0`の`storage`/`db`モジュールはファイルI/O（`std::fs`）を使うため、WASM上では呼ばない
@@ -41,7 +43,7 @@ Studioとの対応関係:
 
 - CIでビルドするため、git依存（`"ufodb-design-system": "github:kento-yoshidu/ufodb_design_system"`）で参照する。design_system側がビルド済みの`dist/`をコミットしているので、インストール時のビルドは不要
 - `#<タグ/コミット>`は付けない。インストール時のコミットが`pnpm-lock.yaml`に記録されて固定されるので、lockfileは必ずコミットする。design_systemの更新を取り込むときは`pnpm update ufodb-design-system`を実行し、lockfileの変更をコミットする
-- design_system側の未コミットの変更を試すときは、一時的に`link:../design_system`に切り替える。`link:`ではReactが二重に読み込まれることがあるため、`vite.config.ts`の`resolve.dedupe: ["react", "react-dom"]`を入れておく
+- design_system側の`main`にまだマージしていない変更を試すときは、一時的に`link:../design_system`に切り替える（手順と注意点は`docs/ROADMAP.md`の「メモ: `link:`で一時的に参照するとき」）
 
 ## デプロイ
 
@@ -53,12 +55,12 @@ Studioとの対応関係:
 
 ## コマンド
 
-<!-- リポジトリ作成後に実際のscriptsに合わせて更新する -->
-
-- `wasm-pack build wasm --target web` — WASMのビルド
+- `wasm-pack build wasm --target web` — WASMのビルド（`wasm/pkg/`に出力）。`pnpm dev`/`pnpm build`の前に必要で、Rust側を変更したら毎回やり直す
 - `pnpm install`
-- `pnpm dev` — 開発サーバー
-- `pnpm build` — 本番ビルド（静的ファイルを`dist/`に出力）
+- `pnpm dev` — 開発サーバー（`http://localhost:5173/ufodb_playground/`）
+- `pnpm build` — `eslint .` → `tsc -b` → `vite build`。静的ファイルを`dist/`に出力（`.wasm`も`dist/assets/`にコピーされる）
+- `pnpm preview` — 本番ビルドの確認
+- `pnpm lint` — ESLintのみ
 - `cargo test`（`wasm/`内で実行）
 
 ## 関連リポジトリ

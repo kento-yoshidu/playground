@@ -12,8 +12,11 @@
 
 ## 開発
 
+Node.js・pnpmに加えて、Rust（`rustup target add wasm32-unknown-unknown`）と[`wasm-pack`](https://github.com/rustwasm/wasm-pack)が必要。
+
 ```
 pnpm install
+wasm-pack build wasm --target web   # Rust（wasm/）をWASMにビルド。Rustを変更したら毎回実行する
 pnpm dev      # 開発サーバー（http://localhost:5173/ufodb_playground/）
 pnpm build    # 本番ビルド（dist/に出力）
 pnpm preview  # 本番ビルドの確認
