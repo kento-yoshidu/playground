@@ -11,7 +11,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **GUI操作のみ**: Studioと同じフォーム操作（INSERT/MERGEなど）を提供する。コマンド（UFQL）を直接入力して実行する機能は想定しない
 - **TCP接続・ユーザーアカウントは対象外**: ブラウザはTCPの生ソケットを開けないため、`ufodb_v0`のTCPサーバー機能はここでは扱わない
 
-実装計画・進捗のフェーズ分けは`docs/ROADMAP.md`を参照。最初はWASMなしで`ufodb-design-system`のダミーコンポーネントを表示するところから始め、WASMはUIの共有が確認できてから入れる。
+実装計画・進捗のフェーズ分けは`docs/ROADMAP.md`を参照。最初はWASMなしで`ufodb-design-system`のダミーコンポーネントを表示してデプロイまで通し（済）、次にWASMを最小構成で通してから、本物のUIで画面を組み立てる。
 
 ## 構成・アーキテクチャ
 
@@ -43,9 +43,13 @@ Studioとの対応関係:
 - `#<タグ/コミット>`は付けない。インストール時のコミットが`pnpm-lock.yaml`に記録されて固定されるので、lockfileは必ずコミットする。design_systemの更新を取り込むときは`pnpm update ufodb-design-system`を実行し、lockfileの変更をコミットする
 - design_system側の未コミットの変更を試すときは、一時的に`link:../design_system`に切り替える。`link:`ではReactが二重に読み込まれることがあるため、`vite.config.ts`の`resolve.dedupe: ["react", "react-dom"]`を入れておく
 
-## 未決定事項
+## デプロイ
 
-- **ホスティング先**: 未定（GitHub Pagesなどの静的ホスティングを想定）。決まったらViteの`base`設定とデプロイ手順をここに追記する
+- GitHub Pagesで公開する: https://kento-yoshidu.github.io/ufodb_playground/
+- `vite.config.ts`の`base`はリポジトリ名に合わせて`"/ufodb_playground/"`にしている。Pagesではサイトが`/<リポジトリ名>/`の下に置かれるため、これが無いとJS・CSSのパスが`/assets/...`になって404（真っ白な画面）になる。リポジトリ名を変えたら`base`も直す
+- `main`へのpush（`develop`からのマージ）で、`.github/workflows/actions.yaml`が`pnpm install --frozen-lockfile` → `wasm-pack build wasm --target web` → `pnpm build` → `dist/`をPagesにデプロイする。Actionsの画面から手動でも実行できる
+- リポジトリ設定のPagesのSourceは「GitHub Actions」にしてある
+- `wasm/pkg/`はコミットしないので、CIでRust（`wasm32-unknown-unknown`ターゲット）と`wasm-pack`（手元と同じ0.14.0）を用意してビルドする。ローカルでも`pnpm dev`/`pnpm build`の前に`wasm-pack build wasm --target web`が必要
 
 ## コマンド
 
