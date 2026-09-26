@@ -5,13 +5,15 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "eslint . && tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview"
   },
   "dependencies": {
+    "@stylistic/eslint-plugin": "^5.10.0",
     "react": "^19",
-    "react-dom": "^19"
+    "react-dom": "^19",
+    "ufodb-design-system": "github:kento-yoshidu/ufodb_design_system"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

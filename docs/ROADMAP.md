@@ -18,13 +18,16 @@
 
 `ufodb-design-system`側ROADMAPのPhase 1で作ったダミーコンポーネントを表示する。
 
-- [ ] `pnpm add github:kento-yoshidu/ufodb_design_system`で追加する。`package.json`には`"ufodb-design-system": "github:kento-yoshidu/ufodb_design_system"`と入り、参照したコミットは`pnpm-lock.yaml`に記録される（方針は`CLAUDE.md`の「`ufodb-design-system`への依存」）
-- [ ] `import "ufodb-design-system/style.css"`を入れる
+- [x] `pnpm add github:kento-yoshidu/ufodb_design_system`で追加する（`node_modules`をサブフォルダで作ってから移動していたため`ERR_PNPM_UNEXPECTED_VIRTUAL_STORE`が出た。`node_modules`を消して入れ直して解決）。`package.json`には`"ufodb-design-system": "github:kento-yoshidu/ufodb_design_system"`と入り、参照したコミットは`pnpm-lock.yaml`に記録される（方針は`CLAUDE.md`の「`ufodb-design-system`への依存」）
+- [x] `import "ufodb-design-system/style.css"`を入れる（`main.tsx`）。`dist/index.js`はCSSを自分で読み込まないため、利用側で1回importする必要がある
+- [x] `App.tsx`をテンプレートの内容から`<Dummy label="..." />`だけに置き換える
 - [ ] 確認すること:
-  - [ ] ダミーコンポーネントが表示され、ボタンを押すと数字が増える（hooksが動く = Reactが1つだけ読み込まれている）
-  - [ ] CSS Modulesのスタイルと、CSS変数（デザイントークン）が効いている
-  - [ ] エディタでpropsの型補完が効く
-  - [ ] `pnpm build`（本番ビルド）→ `pnpm preview`でも同じように表示される
+  - [x] ダミーコンポーネントが表示され、ボタンを押すと数字が増える（hooksが動く = Reactが1つだけ読み込まれている）。`link:`ではなくgit依存なので、`node_modules/.pnpm`のReactは`react@19.3.0`の1つだけ
+  - [x] CSS Modulesのスタイルと、CSS変数（デザイントークン）が効いている
+  - [ ] エディタでpropsの型補完が効く（`label`を省くと型エラーになるか）
+  - [x] `pnpm build`（本番ビルド）が通る。出力のCSS（`dist/assets/index-*.css`）にdesign_systemのクラスと`--attention-color`が含まれている
+  - [ ] `pnpm preview`で本番ビルドも同じように表示される
+- [ ] テンプレート由来の`index.css`・`App.css`・`src/assets/`・`public/icons.svg`などを整理する（全体の`button`や文字色のスタイルがdesign_system側の見た目と混ざるため。Phase 3で画面を組み立てる前に片付ける）
 
 ## Phase 2: GitHub Pagesへのデプロイ
 
