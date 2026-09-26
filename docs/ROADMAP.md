@@ -51,11 +51,16 @@ WASMの仕組み（ビルド → Reactから呼ぶ → CIでビルドしてPages
 - [x] 数値か文字列を受け渡すだけの関数を1つ、`#[wasm_bindgen]`を付けて公開する（`add(left: usize, right: usize) -> usize`）。`use wasm_bindgen::prelude::*;`が必要。`u64`/`i64`はJS側で`bigint`になるため、最初は`number`になる`u32`/`usize`などを使う
 - [x] `wasm-pack build wasm --target web`でビルドし、`wasm/pkg/`に`.wasm`・`.js`（つなぎのコード）・`.d.ts`ができることを確認する。`pkg/`はビルド生成物なのでコミットしない（`wasm-pack`が`pkg/.gitignore`を置く）
 - [x] Reactから`pkg/`の`.js`をimportし、`useEffect`で`await init()`してから関数を呼んで結果を表示する。`init()`が終わるまでは関数を呼べないので、準備完了のstateで表示を切り替える（`init()`を待たずにstateを`true`にすると、`Cannot read properties of undefined (reading 'add')`で`<App>`ごと描画が消える。`init().then(() => setWasmReady(true))`で解決）
-- [ ] `pnpm dev`と`pnpm build` + `pnpm preview`で動くことを確認する（`base`が`/ufodb_playground/`でも`.wasm`が読み込めるか）
-- [x] `pnpm dev`で`add(1, 2)`の結果（3）が表示されることを確認
+- [x] `pnpm dev`で`add(1, 2)`の結果（3）が表示されることを確認する。本番ビルドでは`.wasm`が`dist/assets/wasm_bg-*.wasm`にコピーされ、JSからは`base`付きの`/ufodb_playground/assets/...`で読み込まれる（下の公開URLでの確認で、`base`配下でも読み込めることを確認済み）
 - [x] CIに、Rustのセットアップ（`wasm32-unknown-unknown`ターゲット）・`wasm-pack`のインストール・`wasm-pack build wasm --target web`を`pnpm build`の前に追加する（`rustup target add` → `Swatinem/rust-cache` → `taiki-e/install-action`で`wasm-pack@0.14.0` → `wasm-pack build`）
-- [ ] 公開URLでも動くことを確認する
+- [x] 公開URLでも動くことを確認する（CIで`wasm-pack build`→デプロイされ、Pages上で`a + b = 3`とDummyが表示されることを確認済み）
 - [ ] 状態を持つstruct（カウンターなど）を`#[wasm_bindgen]`で公開し、JSから`new`してメソッドを呼び、値が変わることを確認する（`Ufdb`と同じ「作って、操作して、中身を取り出す」形）
+  - [x] `Counter`（`#[wasm_bindgen(constructor)]`の`new`・`increment(&mut self)`・`value(&self)`）を公開。Rustを変更したら`wasm-pack build`し直さないと`pkg/`に反映されない
+  - [x] Reactでは`init()`の`.then`の中で1回だけ`new Counter()`し、`useRef`に入れて再描画をまたいで持ち続ける（コンポーネント本体で`new`すると再描画のたびに0に戻る）
+  - [x] WASMの中の値が変わってもReactは再描画しないため、`increment()`のあとに`value()`を読んで`useState`に入れる（`Ufdb`でも「操作 → `groups()`を読み直す → stateに入れる」の形になる）
+  - [x] `pnpm build`が通る（`build`に`eslint .`が入ったため、`eslint.config.js`の`globalIgnores`に`wasm/pkg`などを追加）
+  - [x] `pnpm dev`でボタンを押すと数が増えることを確認する
+  - [ ] 公開URLでも同じように動くことを確認する（`main`にマージしたあと）
 
 ### 3-2: `ufodb_v0`につなぐ
 
